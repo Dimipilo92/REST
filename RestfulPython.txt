@@ -1,0 +1,592 @@
+=== OVERVIEW =================================================
+
+Process So Far:
+	(Set up your front end)
+	1. Set up postman routes
+	2. Set up your database (makeshift if its a mockup)
+	3. Set up your resources and insert them into your api
+	4. Set up your security
+
+Structure So Far:
+	app.py:
+		[setup app & api]
+		[setup app secret_key]
+		[create resources & endpoints]
+		[add resources to api along with their routes]
+	security.py:
+		[define authenticate(username, password)]
+		[define identity(payload)]
+	create_tables.py:
+		[create all the tables you need to store your resources]
+	[module for each resource]:
+		[define classes and methods to create new objects and handle objects in memory based on data from your databases, using unique identifiers as reference]
+		[define a Resource class for each resource to add to the api]
+		
+
+Overview:
+	Section 1:
+	Section 2: Reviews Pythons and tools we need to know
+	Section 3: Covers what is a Web Server and what it means for an API to be RESTFUL
+		Web Server -  Software on a machine that handles incoming requests for information (Resources)
+		RESTFul - An abstract way of looking at server requests. 
+			Requests look for Resources NOT data.
+			Also, they DON'T wait for NO man! (They're stateless)
+	Section 4: Covers making A RESTFul API the fast way.
+		
+		With, Flask-RESTFul, endpoints and routes are no longer the focus. Now resources are the focus.
+		Objects are defined and 
+	Section 5:
+
+Modules and Utilities:
+
+	flask
+		Flask
+		request - used to process json in requests
+		jsonify - used to convert dicts to json (no need if using flask-RESTful
+		render_template - used to send html templates
+	flask-restful
+		Resource - used to create resources
+		Api - add resources and end points
+		reqparse - used to parse through requests
+			getParser
+	flask-JWT
+		JWT
+		jwt_required - a library 
+	werkzeug.security
+		safe_str_cmp - allows you to compare strings safely
+	sqlite
+
+Vocab:
+	
+	routing - definition of application endpoints (URIs) and how they respond to requests
+	route - the "name" used to access an endpoint ('\store')
+	end point - this describes the actual REQUEST made at that endpoint (GET, PUT)
+	URI - Uniform resource Identifier
+	
+	route path
+	requests
+	resource
+	PostMan
+	RESTful
+	JWT - JSON Web Token (Obfuscated/Encrypted JSON object)
+
+
+			Browser(Client)									Server
+	GET 	Retrieve something from the server				Send something to browser
+	POST 	Send something to server						Recieve item to store from browser
+	PUT		Send something to server (if it's not there.	Recieves item to store from browser, and stores if its not there.
+	DELETE 	Send an item to remove in server				Removes item that was sent from browser
+
+More Reading:
+		https://softwareengineering.stackexchange.com/questions/120716/difference-between-rest-and-crud
+		https://stackoverflow.com/questions/630453/put-vs-post-in-rest
+		https://stackoverflow.com/questions/176264/what-is-the-difference-between-a-uri-a-url-and-a-urn
+		https://developer.wordpress.org/rest-api/extending-the-rest-api/routes-and-endpoints/
+
+List Functions:
+
+	filter(function, iterable) 	# function returns filter object
+	list(iterable) 				# will create a list from all the objects in the filter item
+	next(iterable, default) 	# will return the first item returned by filter if there are no items in filter,
+								# and a default value is not set, next() will break
+
+Other Programming Notes:
+	global [variable] - sets the variable to be the global version, instead of creating a localized version
+	if item is None
+	
+HTTP Status Codes Learned:
+
+	Success (2xx)
+		200 OK (Default)
+		201 Created
+	Client Errors (4xx)
+		400 Bad Request - Request should not have been made. (Should have checked before trying to create)
+		401 Unauthorized
+		404 File not Found
+	Server Errors: (5xx)
+		500 Internal Server Error
+	http://www.restapitutorial.com/httpstatuscodes.html#
+	
+=== SECTION 6: Flask SQLAlchemy ==============================
+
+## SQL Alchemy makes it easy to set up databases
+
+
+
+
+=== SECTION 5: Databases =====================================
+
+## Setting up and using a database:
+
+	connection = sqlite3.connect('data.db')
+	cursor = connection.cursor()
+
+	cursor.execute([query])
+	cursor.executemany([query],[tuple_list])
+	results = cursor.execute([query]) # iterable
+	for row in results:
+		...
+	row = result.fetchone()
+	var = row[0]
+		
+
+	connection.commit() # if a change to the DB was made
+	conection.close()
+
+## Useful SQL Queries:
+	CREATE TABLE users (id int, username text, password text)
+	INSERT INTO users VALUES(?,?,?)
+	CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username text, password text)
+	INSERT INTO users VALUES (NULL, ?, ?)
+	SELECT * FROM users WHERE username=?
+	DELETE FROM items WHERE name=?
+	UPDATE items set price=? WHERE name=?
+	
+## NOTE: MUST run the code from the same location that the database is located
+
+## Exception
+	try:
+		[block]
+	except:
+		[block]
+
+
+=== SECTION 4: Flask-Restful =================================
+
+## VIRTUAL ENV
+
+	Installing VirtualEnv:
+		pip install virtualenv
+		virtualenv [environment_name]
+		virtualenv [env_name] --python=[pythonversion]
+		flask\scripts\activate # for windows
+		# source venv/bin/activate for linux
+		flask\scripts\deactivate # for windows
+		# deactivate for linux
+		
+		#must restart pc for deactivate to work (in path)
+	
+	Useful Commands in VirtualEnv:
+		[program] --version
+		pip freeze # installed libraries and versions
+	
+	Make seperate virtualenv for each project so that projects
+	don't share libraries and have dependency issues
+	
+	pip install flask-RESTful
+	
+## Flask-Restful
+	
+	api = API([Flask object])
+	api.add_resource([Resource object], [URI])
+	
+## Test-First design
+
+	# don't make endpoints before they are necessary.
+	
+	Use postman:
+	Write a list of ways you want to interact with your resources
+	Figure out how you want to interact with them (via their endpoints)
+	You'll typically want:
+	* get all resources, get the info of a single resource,
+	* add(post), delete , and update(put) a resource
+	
+## Authentication
+	Process:
+	1. setup a key
+		app.secret_key = Jose
+	2. set up security.py file with authenticate(username,password), and identity(payload) methods
+	3. use @jwt_required on methods you wish to be secure
+	
+	# Through Postman
+	1. http://127.0.0.1:5000/auth
+	2. Copy the jwt (not quotes)
+	3. in whatever method requires authorization
+		* Header -> Key: "Authorization"
+		* Value: "jwt [jwt copied from /auth]"
+		
+	"Logging in" simply means, "Can you prove that you are somebody?"
+	1. First send a username and password.
+	2. With that username and password you should recieve a tempororary auth jwt.
+	3. With that jwt, you then make the request, since 
+	
+## Using Req Parser
+	import reqparse
+	parser = reqparse.RequestParser()
+	parser.add_argument([argument],required=?,type=?,help=?)
+	data = parser.parse_args()
+
+=== SECTION 3: YOUR FIRST REST API (FLASK AND THE WEB) =======
+
+## INSTALLING FLASK
+
+	pip install flask (in python 3.6)
+	pip3.6 install flask (in python 2.7)
+
+## FLASK AND REQUESTS
+
+	# flask apps are built around Requests and responses
+
+	# requests - what your browser does.
+	  * visiting a website makes a request. Servers recieve it.
+	  * ask for a homepage
+	  * Ask for user # 3
+	  * They can be anything
+	  * Server must be created to understand and recieve request
+  
+	http://127.0.0.1:5000/ (localhost @ port 5000)
+	
+## Basic Flask project structure
+	from flask import Flask
+	app = Flask(__name__)
+	# Set up routes and endpoints
+	app.run(debug=True, port=5000)
+
+## WEB SERVERS
+	# Web server - a piece of software designed to accept incoming web requests
+	# When we access a web page, what request do we send?
+		When we (the client) go to http://www.google.com
+		Web one of their web servers (somewhere) recieves:
+			GET / HTTP/1.1
+			Host: www.google.com
+		
+	# GET - verb (what is expected of the serve to DO)
+	# / Path - what we want from the server
+	# HTTP/1 - protocol (as opposed to the faster HTTP/2)
+	
+	so a browser is like a waiter, the request is the order, and the kitchen is the web server
+	
+	different servers respond to get requests differently
+	* error if / is not found, or HTTP is not supported, or if server isn't available
+	* might send HTML code , text, nothing depending on how server is configured
+	
+	EVERY PAGE will do this.
+	https://twitter.com/login
+	* host: https://twitter.com
+	* path: /login
+	
+	host is like the chef, and the path is the food?
+	* send this food request to the chef.
+	
+	All the servers: piece of data comes in (GET, PATH, PROTOCOL, HOST), piece of data comes out(HTML, TEXT)
+	
+	Visiting a page will ALWAYS do a get. This is the way the BROWSER is configured
+	
+	There are other things you can do, like POST, DELETE, PUT, OPTIONS, HEAD
+	
+	All servers respond to different requests (POST, DELETE, GET etc) in similar ways
+	These are basically standard.
+	
+	Two perspectives: Opposite ends (names come from what BROWSER is doing, not SERVER)
+	HTTP Verbs (Requests):
+			Browser(Client)									Server
+	GET 	Retrieve something from the server				Send something to browser
+	POST 	Send something to server						Recieve item to store from browser
+	PUT		Send something to server (if it's not there.	Recieves item to store from browser, and stores if its not there.
+	DELETE 	Send an item to remove in server				Removes item that was sent from browser
+	
+	BROWSER
+	
+## REST PRINCIPLES
+
+	REST API - A WAY OF THINKING about how a web server responds to requests
+	
+	Responds with RESOURCES (not data)
+		Data is a resource, a resource is not (exclusively) data
+		
+		Think of it like OOP:
+		
+		GET /item/chair
+		POST /item/chair - w/ data
+		PUT /item/chair - w/ data
+		DELETE /item/chair
+		
+		Resource: /item/chair
+	
+	REST is Stateless:
+		* One request cannot be dependent on any other request
+		* only has knowledge about the current request.
+		
+		POST /item/chair - item created.
+		GET /item/chair - must check to see if item exists (it has no knowledge)
+		There is no state machine here. GET does not activate AFTER a POST is made.
+		You can ALWAYS call GET. This is what stateless means
+	
+## JSON:
+	
+	Essentially text(string) formatted like a dictionary (key-value pair)
+	{
+		'key': 'value',
+		'key': 'value'
+	}
+	
+	It is NOT a dictionary, however. It is text.
+	JSON ALWAYS USES DOUBLE QUOTES, NEVER SINGLE QUOTES
+	
+## POSTMAN:
+
+	https://www.getpostman.com/apps
+	
+	Setting up a post request.
+	
+	1. Set up the headers
+		* When a server recieves a request it looks at the header to figure out what the request IS
+		* Tells us what type of data is being sent
+			- Content-Type: application/json
+	2. Set up the body
+		* You've told the server what type of data it should expect. So now send the data it should expect
+		* if it's expecting JSON, send JSON
+		* Select "Raw"  (JSON will be selected because it's in the header"
+	
+=== SECTION 2: PYTHON ========================================
+
+## VARIABLES
+	a= 5
+	str1 = "hi"
+	str2 = 'hi'
+	print(a)
+	print(str)
+	print(123)
+
+## METHODS
+
+	def empty_method()
+		pass
+
+	def my_multiply_method(arg1,arg2):
+		return arg1*arg2
+		
+	print(my_multiply_method(5,3)
+		
+	# python variables_method
+
+## LISTS, TUPLES AND SETS
+
+	grades = [1,2,3,4,5] # ordered list
+	tuple_grades = (1,2,3,4,5) # tuple = immutable list
+	single_tuple = (1,) # add the comma otherwise it will be interpreted as an int
+	set_grades = {1,2,3,4,5} # unique and unordered like a hashset
+
+	print(sum(grades)) #prints in order
+	print(len(grades)) # prints in order
+	print(set_grades) # does not print in order
+
+## LIST, TUPLE. AND SET FUNCTIONS
+
+	# adding a value
+	grades.append(6)
+	tuple_grades = tuple_grades + (6,)
+
+	# accessing
+	grades[0] = 5
+	# tuple_grades[0] = 60 does not work
+	set_grades.add(6)
+
+	sum(grades);
+
+## SET OPERATIONS
+
+	set1 = {1,2,3,4,5}
+	set2 = {2,3,4,6}
+
+	set1.intersection(set2) # returns {2,3,4}
+	set1.union(set2) # returns {1,2,3,4,5,6}
+	set1.difference(set2) # returns {5,6}
+
+## LOOPS
+
+	str = "hello"
+	for i in str: 	#iterables: strings, lists, sets, tuples
+		print(character)
+
+	print(n ** 2) # n^2
+
+	flag = True
+	while flag == True
+		print(10)
+		user_input = input("Should we print again? (y/n) ")
+		if user_input == 'n':
+			flag = False
+
+	# python --version
+	# input([message]) is specific to 3.5
+
+## IF STATEMENTS AND CONDITIONALS AND FORMATTING
+
+	n = 3
+	numbers = [1,2,3]
+
+	if n in numbers:
+		print("{} is in the set".format(n))
+	else:
+		print("{} is not in the set".format(n))
+	#if n not in numbers: // alternative method
+	#elif
+
+	print("You know {}!".format(n))
+
+## PROGRAMMING PROJECT (SPLIT AND STRIP)
+
+	# String.split()
+	# s.strip() // trim whitespace
+
+## LIST COMPREHENSIONS
+
+	list1 = [x for x in range(5)] // [0,1,2,3,4]
+	list2 = [x**2 for x in list1] // [0,1,4,9,16]
+	list3 = [n for n in range(10) if n%2 == 0] // [0,2,4,6,8]
+	list4 = [person.lower() for person in ["DIMITRI", "ROB", "SAL"]]
+
+
+## DICTIONARY
+
+dict = { 
+	'key1' : 'value
+	'key2' : 1
+	'list' : [1,2,3,4,5]
+}
+
+dict['list'][0] = 1;
+
+
+## DICTIONARIES VS CLASSES VS OBJECTS
+
+# Dictionary: An arbitrary collection of data
+lottery_player_dict = {
+	'name':'Rolf',
+	'numbers': {5,9,12,3,1,21}
+}
+
+# Class: The blueprint for a meaningful collection of data
+class LotteryPlayer: 
+	def __init__(self, name): ## __init__ is constructor
+		self.name = name, 
+		# this is similar to java's self
+		# in other languages its a hidden parameter
+		# __init__ gets called when memory for the object is allocated.
+		# __repr__, and __str__
+		self.numbers = {5,9,12,3,1,21}
+	
+	def total(self):
+		return sum(self.numbers)
+
+# Object: An instatiation of a class
+player = LotteryPlayer("Rolf")
+player.total();
+
+
+
+## DECLARING STATIC METHODS
+
+	class Foo:
+		def __init__(self):
+			pass
+		
+		@classmethod 		   	# a static method that uses variables from the class
+		def class_method(cls): 	# passes the class as an instance
+			print("Do nothing")
+		
+		@staticmethod			# a static method that does not use variables from the class
+		def static_method()		# not as useful as a @classmethod
+			print("Do nothing")
+	
+	Foo.staticmethod()
+
+	
+## *args AND **kwargs
+	
+	def args_func(*args): # takes in a list of arguments
+		# args parsed in a list
+		return args[0]
+		
+	def kwargs_func(*args, **kwargs): # takes in a list of arguments FIRST and set of named arguments SECOND
+		return args[1]
+		return kwargs['name']
+		
+	args_func(1,2,3,4,5) 						# [1,2,3,4,5]
+	kwargs_func(31, location='UK', name='Jose') 	# [31,], {'name':'UK', 'name':'Jose'}
+	
+
+	
+	
+## INHERITANCE, *args, and **kwargs
+	class Thing:
+		def __init__(self, name, color):
+			self.name = name;
+			self.color = color;
+		
+		@classmethod
+		def copy(cls, origin, name, *args):
+			return cls(name, *args)
+			
+	
+	class Tree(Thing):
+		def __init__(self, name, color age):
+			super().__init__(color)
+			self.height = height;
+
+## PASSING FUNCTIONS, LAMBDA FUNCTIONS, AND FILTER
+	def func1(other):
+		return other()
+	
+	def add():
+		return 1 + 1
+	
+	# equivalent statements
+	print(func1(add))
+	print(func1(lambda: 1+1))
+	
+	# application of lambda functions
+	my_list = [13, 56,77,484]
+	
+	def not_thirteen(x):
+		return x != 13
+	
+	# equivalent statements
+	print(list(filter(lambda x: x != 30, my_list))) # more applicable to other programming languages
+	print(list(filter(not_thirteen, my_list))) 
+	print([x for x in my_list if x != 13]) # specific to python
+	
+
+## DECORATORS AND IMPORTS
+
+	# Decorator - a wrapper function that gets called before and after another function
+	# in otherwords, it's a method that takes in a method as an argument
+	
+	import functools # decorators use this library
+	
+	def my_decorator(func):
+		@functools.wraps(func) #this is the magic
+		def function_that_runs_func(): 		# this funciton is the function that is actually run
+			print("In the decorator!")
+			func() 							# if you take this line out, the previous function doesn't actually work.
+			print ("After the function")
+		return function_that_runs_func
+	
+	@my_decorator
+	def my_function():
+		print("I'm the funciton!")
+
+## DECORATORS WITH ARGUMENTS
+	
+	def decorator_with_arguments(message):
+		def my_decorator(func):
+			@functools.wraps(func) #this is the magic
+			def function_that_runs_func(*args, **kwargs): 		# this funciton is the function that is actually run
+				print("In the decorator!")
+				print(message)
+				func(*args,**kwargs) 							# if you take this line out, the previous function doesn't actually work.
+				print ("After the function")
+			return function_that_runs_func
+		return my_decorator
+
+	@decorator_with_args("AYO")
+	def my_function_too(a, b) # this function is replaced by the decorator
+		print(a+b)
+	
+	my_function_too()
+	
+	#	Applications:
+	#	pass user permissions to decorators
+	#	insert elements to database
+	#	Admin page
